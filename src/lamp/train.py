@@ -117,3 +117,31 @@ def evaluate(eval_tsv, model, add_drop='add_drop.tsv'):
     d['accuracy']=(correct/len(eval_labels))*100
     d['misslabeled']=pd.DataFrame(ml[1:], columns = ml[0])
     return d
+def svm_train(dfs, dftags):
+    pro = []
+    con = []
+    for df,j in zip(dfs,dftags):
+        if j ==1:
+            op = list(df['by_abstract'].pos.values)
+            on = list(df['by_abstract'].neg.values)
+            for x,y in zip(op,on):
+                pro.append([x,y])
+        elif j==2:
+            op = list(df['by_abstract'].pos.values)
+            on = list(df['by_abstract'].neg.values)
+            for x,y in zip(op,on):
+                con.append([x,y])
+    pro_tag = [1 for i in pro]
+    con_tag = [2 for i in con]
+    print(pro)
+    print(con)
+    import numpy as np
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    X = np.array(pro+con)
+    y = np.array(pro_tag+con_tag)
+    from sklearn.svm import SVC
+    clf = make_pipeline(StandardScaler(), SVC(gamma='auto'))
+    return clf.fit(X, y)
+# clf = svm_train([lr,bl,cs,st],[1,1,2,2])
+# clf.predict([[4,2]])

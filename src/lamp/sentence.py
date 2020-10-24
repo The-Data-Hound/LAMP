@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''NLTK Tools'''
-def clean(sentence,stemlem = 'lem', add_drop = 'add_drop.tsv',column = 'word'):
+def clean(sentence, stemlem = 'lem', add_drop = 'add_drop.tsv',column = 'word', keep_all = False):
     import pandas as pd
     import nltk
     import os
@@ -25,8 +25,11 @@ def clean(sentence,stemlem = 'lem', add_drop = 'add_drop.tsv',column = 'word'):
     #drop two letter words
     token = [i for i in token if len(i)>2]
     token = [stemlem(i) for i in token]
-    sentence = ' '.join(token)
-    return sentence
+    if len(token)>3:
+        sentence = ' '.join(token)
+        return sentence
+    else:
+        return ''
 def word_stats(sentences, mymin =5):
     counts = {}
     for sentence in sentences:
