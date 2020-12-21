@@ -5,21 +5,16 @@ def getparent():
     this_dir = os.path.dirname(this_file)
     parent = os.path.abspath(os.path.join(this_dir, os.pardir))
     return parent
+
 def prokka(genome, outfolder):
     import os
-    print('running prokka: this step may take a few minutes')
+    # print('running prokka: this step may take a few minutes')
     os.system('prokka %s --outdir %s --force'%(genome, outfolder))
-
-def mash():
-    os.system('mash ')
-    print('running mash')
-def makemashdb():
-    print('makemashdb')
 
 def barrnap(genome, outfolder):
     from Bio import SeqIO
     import os
-    print('Running Barrnap to Pull 16S Seqs from Assembly\n\n')
+    # print('Running Barrnap to Pull 16S Seqs from Assembly\n\n')
     dashes = [j for j, x in enumerate(genome) if x == "/"]
     try:
         gname = genome[dashes[-1]+1:]
@@ -38,7 +33,7 @@ def barrnap(genome, outfolder):
         os.system('rm %s'%(genome+'.fai'))
         return outfolder+gname+'.16s.fna'
     except:
-        print('No 16S Found\n\n')
+        # print('No 16S Found\n\n')
         os.system('rm %s'%(genome+'.fai'))
 
 def makeblastdb(file,out):
@@ -53,13 +48,13 @@ def makeblastdb(file,out):
     new.close()
     os.system('makeblastdb -dbtype nucl -in %s -out %s'%(file,out))
     os.chdir(cwd)
-    print('Making blastdb %s\n\n'%out)
+    # print('Making blastdb %s\n\n'%out)
 
 
 def blast_short(seq_name, outfolder, db):
     import pandas as pd
     import os
-    print('Running BLAST %s\n\n'%db)
+    # print('Running BLAST %s\n\n'%db)
     cwd = os.getcwd()
     parent = getparent()
     os.chdir(parent+'/lamp_dbs')
@@ -84,9 +79,9 @@ def get_blast_species(genome, outfolder, db = 'tlp'):
     df = df.sort_values(by = 'pident', ascending = False).reset_index(drop=True)
     species=df.sseqid.iloc[0]
     dashes = [j for j, x in enumerate(species) if x == "_"]
-    print('Species Identified as:')
-    print(species[dashes[1]+1:dashes[2]]+' '+species[dashes[2]+1:dashes[3]])
-    print('\n')
+    # print('Species Identified as:')
+    # print(species[dashes[1]+1:dashes[2]]+' '+species[dashes[2]+1:dashes[3]])
+    # print('\n')
     return species
 
 def get_card_genes(genome, outfolder, db = 'card'):
@@ -118,18 +113,20 @@ def download_dbs(db ='tlp'):
         try:
             os.system('wget https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/genomic_files_reps/gtdb_genomes_reps.tar.gz')
             os.system('gunzip gtdb_genomes_reps.tar.gz')
-            print('Finished GTDB')
-            print('Dbs downloaded at %s'%os.getcwd())
+            # print('Finished GTDB')
+            # print('Dbs downloaded at %s'%os.getcwd())
         except:
-            print('Something Went Wrong')
+            x=0
+            # print('Something Went Wrong')
     if db =='tlp':
         try:
             os.system('wget ftp://ftp.ncbi.nlm.nih.gov:21/refseq/TargetedLoci/Bacteria/bacteria.16SrRNA.fna.gz')
             os.system('gunzip bacteria.16SrRNA.fna.gz')
-            print('TLP Downloaded')
-            print('Dbs downloaded at %s'%os.getcwd())
+            # print('TLP Downloaded')
+            # print('Dbs downloaded at %s'%os.getcwd())
         except:
-            print('Something Went Wrong')
+            x=0
+            # print('Something Went Wrong')
     if db =='card':
         from shutil import copyfile
         try:
@@ -140,10 +137,11 @@ def download_dbs(db ='tlp'):
             os.system('tar tar -xvf card-data.tar')
             copyfile('nucleotide_fasta_protein_homolog_model.fasta',parent+'/lamp_dbs/card.fna')
             os.system('rm -r %s/card'%(parent+'/lamp_dbs'))
-            print('Card Downloaded')
-            print('Dbs downloaded at %s'%os.getcwd())
+            # print('Card Downloaded')
+            # print('Dbs downloaded at %s'%os.getcwd())
         except:
-            print('Something Went Wrong')
+            x=0
+            # print('Something Went Wrong')
     os.chdir(cwd)
 def setup_dbs():
     import os

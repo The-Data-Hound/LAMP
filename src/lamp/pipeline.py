@@ -13,7 +13,9 @@ from sklearn.model_selection import train_test_split
 
 
 def runall(sentences):
-    classifier = pipeline('sentiment-analysis','/home/boom/Desktop/001/bacteria_lamp_network' )
+    from lamp.load_thesis_data import load_thesis_data
+    data = load_thesis_data()
+    classifier = pipeline('sentiment-analysis',data['bacteria_lamp_network'] )
     label = []
     for sentence in sentences:
         label.append(classifier(sentence))
@@ -28,6 +30,8 @@ def getparent(p = True):
         return parent
     else:
         return grandparent
+
+
 def lamp_pipeline(  genome,
                     abstracts = 'local',
                     email='None',
@@ -36,16 +40,16 @@ def lamp_pipeline(  genome,
                     retmax=20,
                     wordcloud = True,
                     have_genome=True,
-                    run_prokka=False,
+                    run_prokka=True,
                     html_ = False,
                     by_species=True):
+    import os
     import seaborn as sns
-    from lamp.sentence import clean, tokenize_sentences, species_sentences, word_cloud, word_stats
+    from shutil import copyfile
+    from datetime import datetime
     from lamp.datamine import datamine
     from lamp.genome import get_blast_species, setup_dbs, prokka, blast_short, get_card_genes
-    from shutil import copyfile
-    import os
-    from datetime import datetime
+    from lamp.sentence import clean, tokenize_sentences, species_sentences, word_cloud, word_stats
     print('LAMP Pipeline Starting\n\n')
     date = datetime.now()
     parent = getparent()
@@ -60,7 +64,6 @@ def lamp_pipeline(  genome,
                 copyfile(parent+'/imgs/'+img, outfolder+'/imgs/'+img)
         except:
             outfolder = os.getcwd()+'/lamp_output'
-            print('Output Folder Already Exists\n%s\n\n'%outfolder)
     else:
         try:
             os.mkdir(outfolder+'lamp_output')
@@ -72,20 +75,17 @@ def lamp_pipeline(  genome,
                 copyfile(parent+'/imgs/'+img, outfolder+'/imgs/'+img)
         except:
             outfolder = os.getcwd()+'/lamp_output'
-            print('Output Folder Already Exists\n%s\n\n'%outfolder)
     if have_genome==True:
-        print('have_genome == True\n%s\n\n'%genome)
-        # try:
         species = get_blast_species(genome, outfolder+'/data/')
         get_card_genes(genome, outfolder+'/data/')
         if run_prokka ==True:
             prokka(genome,outfolder+'/data/')
     else:
         species=genome
-        print(species+'\n\n')
+
     # # NLP Here
     if abstracts == 'local':
-        print('Using Local Abstracts\n\n')
+        # print('Using Local Abstracts\n\n')
         abstracts = getparent(p=False)+'/data/pubmed/'
         lst=[i for i in os.listdir(abstracts) if species.replace(' ','_') in i]
         mab=[''.join(open(abstracts+i,'r').readlines()) for i in lst]
@@ -106,6 +106,7 @@ def lamp_pipeline(  genome,
                 clean_sentences = [clean(i) for i in sentences]
                 clean_sentences=[i for i in clean_sentences if i !='']
                 label = runall(clean_sentences)
+
                 pos = [i for i in label if i[0]['label']=='POSITIVE']
                 ech.append([b,len(clean_sentences),len(pos),len(clean_sentences)-len(pos),len(pos)/len(clean_sentences)*100])
                 fc+=clean_sentences
@@ -116,25 +117,9 @@ def lamp_pipeline(  genome,
         adf = pd.DataFrame(ech[1:],columns = ech[0])
 
     else:
-        print('Mining Genomes From %s'%abstracts)
-        # abstracts = datamine(species, email, retmax = retmax, api_key=api_key)
-        # sentences = []
-        # for a in abstracts:
-        #     sentences+=species_sentences(tokenize_sentences(a), species)
-        # clean_sentences = [clean(i) for i in sentences]
-        # label = runall(clean_sentences)
-        # score = []
-        # lab = []
-        # for i in range(0,len(label)):
-        #     score.append(label[i][0]['score'])
-        #     lab.append(label[i][0]['label'])
-        # if wordcloud == True:
-        #     try:
-        #         word_cloud(word_stats(sentences, mymin =0))
-        #     except:
-        #         print('word cloud broken')
-            # except:
-            #     print('setup_dbs')
+        x=0
+        # print('Mining Genomes From %s'%abstracts)
+
     # barrnap and 16s
     if have_genome==False:
         genome = 'None'
@@ -162,6 +147,6 @@ def lamp_pipeline(  genome,
     sns.color_palette("tab10")
     label=species
     ax=sns.regplot(r['by_abstract']['pos'],r['by_abstract']['neg'],label=label)
-    ax.legend(loc=2)
-    print('LAMP Pipeline Complete!\nI love LAMP')
+    ax.legend(loc='best')
+    # print('LAMP Pipeline Complete!\nI love LAMP')
     return r
